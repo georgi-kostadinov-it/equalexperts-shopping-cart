@@ -4,6 +4,6 @@ namespace cartapp
   {
     string ProductName { get; set; }
     int Quantity { get; set; }
-    double Price { get; set; }
+    decimal Price { get; set; }
   }
 }

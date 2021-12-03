@@ -4,9 +4,11 @@ namespace cartapp
 {
   public interface ICartService 
   {
-    double Total();
+    decimal TotalPrice();
+    decimal TotalSalesTaxAmount();
     List<ICartItem> Items();
     void Empty();
     void Add(ICartItem item);
+    decimal SalesTax { get; set; }
   }
 }
