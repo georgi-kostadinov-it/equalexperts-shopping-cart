@@ -24,7 +24,16 @@ namespace cartapp
     }
     public void Add(ICartItem item)
     {
-      _items.Add(item);
+      var results = _items.Where(o => o.ProductName.Equals(item.ProductName));
+      var it = _items.FirstOrDefault(s => s.ProductName.Equals(item.ProductName));
+      if (it != null)
+      {
+        it.Quantity = it.Quantity + item.Quantity;
+      }
+      else
+      {
+        _items.Add(item);
+      }
     }
   }
 }

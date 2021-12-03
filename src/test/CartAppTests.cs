@@ -1,8 +1,5 @@
 using System;
-using Moq;
 using NUnit.Framework;
-using System.Linq;
-using System.Collections.Generic;
 using cartapp;
 
 namespace Test
@@ -24,14 +21,14 @@ namespace Test
       }
 
       [Test]
-      public void AddItemsToShoppingCart()
+      public void AddFiveDoveSoaps()
       {
         // arrange:
         // An empty shopping cart
         cartService.Empty();
 
         // And a product, Dove Soap with a unit price of 39.99
-        var cartItem = GetCartItemMock("Dove Soap", 5, 39.99);
+        var cartItem = new CartItem("Dove Soap", 5, 39.99);
         
         // act:
         // The user adds 5 Dove Soaps to the shopping cart
@@ -47,13 +44,66 @@ namespace Test
         Assert.AreEqual(cartService.Total(), 199.95);
       }
 
-      private static ICartItem GetCartItemMock(string productName, int quantity, double price)
+      [Test]
+      public void EmptyCart()
       {
-        var cartItemMock = new Mock<ICartItem>();
-        cartItemMock.Setup(item => item.ProductName).Returns(productName);
-        cartItemMock.Setup(item => item.Price).Returns(price);
-        cartItemMock.Setup(item => item.Quantity).Returns(quantity);
-        return cartItemMock.Object;
+        // arrange:
+        
+        // act:
+        cartService.Empty();
+
+        // assert:
+        // After the shopping cart is emptied it will contain no items
+        Assert.AreEqual(cartService.Items().Count, 0);
+      }
+
+      [Test]
+      public void CartItemValidation()
+      {
+        // arrange:
+ 
+        // act:
+
+        // assert:
+        // Cannot create Cart Items with empty Product Name
+        var ex1 = Assert.Throws<Exception>(() => new CartItem("", 0, 0.0));
+        Assert.That(ex1.Message, Is.EqualTo("Cart Item Product Name cannot be empty!"));
+
+        // Cannot create Cart Items with negative or zero Quantity
+        var ex2 = Assert.Throws<Exception>(() => new CartItem("N.A.", -1, 0.0));
+        Assert.That(ex2.Message, Is.EqualTo("Cart Item Quantity must be a positive number greater than zero!"));
+        var ex3 = Assert.Throws<Exception>(() => new CartItem("N.A.", 0, 0.0));
+        Assert.That(ex3.Message, Is.EqualTo("Cart Item Quantity must be a positive number greater than zero!"));
+
+        // Cannot create Cart Items with negative Price
+        var ex4 = Assert.Throws<Exception>(() => new CartItem("N.A.", 1, -12.34));
+        Assert.That(ex4.Message, Is.EqualTo("Cart Item Price cannot be negative!"));
+        Assert.DoesNotThrow(() => new CartItem("A Free-be.", 1, 0.0));
+      }
+
+      [Test]
+      public void ConsequitiveItemAdditions()
+      {
+        // arrange:
+        // An empty shopping cart
+        cartService.Empty();
+        var cartItem1 = new CartItem("Dove Soap", 5, 39.99);
+        var cartItem2 = new CartItem("Dove Soap", 3, 39.99);
+        
+        // act:
+        // The user adds 5 Dove Soaps to the shopping cart
+        // And then adds another 3 Dove Soaps to the shopping cart
+        cartService.Add(cartItem1);
+        cartService.Add(cartItem2);
+
+        // assert:
+        // The shopping cart should contain 8 Dove Soaps each with a unit price of 39.99
+        // And the shopping cart’s total price should equal 319.92
+        Assert.AreEqual(cartService.Items().Count, 1); // one unique item
+        Assert.AreEqual(cartService.Items()[0].ProductName, "Dove Soap");
+        Assert.AreEqual(cartService.Items()[0].Quantity, 8);
+        Assert.AreEqual(cartService.Items()[0].Price, 39.99);
+        Assert.AreEqual(cartService.Total(), 319.92);
       }
   }
 }
